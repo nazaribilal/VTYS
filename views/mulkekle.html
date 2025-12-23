@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mülk Ekle</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+
+<body>
+    <div class="container">
+        <aside class="sidebar">
+            <h2>Menü</h2>
+            <ul>
+                <li><a href="/index.html">Ana Sayfa</a></li>
+                <li><a href="/mulkler.html" class="active">Mülkleri Göster</a></li>
+                <li><a href="/kiracilar.html">Kiracıları Göster</a></li>
+                <li><a href="/kiraciekle.html">Kiracı Ekle</a></li>
+                <li><a href="/mulkekle.html">Mülk Ekle</a></li>
+                <li><a href="/kiraekle.html">Kira Ekle</a></li>
+            </ul>
+        </aside>
+
+        <main class="content">
+            <h1>Yeni Mülk Ekle</h1>
+            <form id="mulkForm">
+                <!-- Genel Mülk Bilgileri -->
+                <label for="mulkTipi">Mülk Tipi:</label>
+                <select id="mulkTipi" name="mulkTipi" required>
+                    <option value="">Seçiniz</option>
+                    <option value="1">Konut</option>
+                    <option value="2">İş Yeri</option>
+                    <option value="3">Arsa</option>
+                </select>
+
+                <label for="mulkAdi">Mülk Adı:</label>
+                <input type="text" id="mulkAdi" name="mulkAdi" required>
+
+                <label for="metreKare">Metre Kare:</label>
+                <input type="number" id="metreKare" name="metreKare" required>
+
+                <label for="adresMetni">Adres Metni:</label>
+                <textarea id="adresMetni" name="adresMetni" required></textarea>
+
+                <label for="postaKodu">Posta Kodu:</label>
+                <input type="text" id="postaKodu" name="postaKodu" required>
+
+                <!-- Lokasyon Dropdown Listeleri -->
+                <label for="ulkeNo">Ülke:</label>
+                <select id="ulkeNo" name="ulkeNo" required>
+                    <option value="">Ülke Seçiniz</option>
+                </select>
+
+                <label for="sehirNo">Şehir:</label>
+                <select id="sehirNo" name="sehirNo" required>
+                    <option value="">Şehir Seçiniz</option>
+                </select>
+
+                <label for="ilceNo">İlçe:</label>
+                <select id="ilceNo" name="ilceNo" required>
+                    <option value="">İlçe Seçiniz</option>
+                </select>
+
+                <label for="mahalleNo">Mahalle:</label>
+                <select id="mahalleNo" name="mahalleNo" required>
+                    <option value="">Mahalle Seçiniz</option>
+                </select>
+
+                <label for="sokakNo">Sokak:</label>
+                <select id="sokakNo" name="sokakNo" required>
+                    <option value="">Sokak Seçiniz</option>
+                </select>
+
+                <!-- Dinamik Alanlar -->
+                <div id="ekBilgiler"></div>
+
+                <button type="submit">Mülk Ekle</button>
+            </form>
+            <p id="sonuc"></p>
+        </main>
+    </div>
+
+    <script>
+        const ekBilgilerDiv = document.getElementById('ekBilgiler');
+
+        // API'den verileri yükle ve dropdown listelerini doldur
+        async function loadOptions(apiEndpoint, selectId) {
+            try {
+                const res = await fetch(apiEndpoint);
+                if (!res.ok) {
+                    throw new Error(`HTTP Error! status: ${res.status}`);
+                }
+                const data = await res.json();
+
+                const selectElement = document.getElementById(selectId);
+                selectElement.innerHTML = '<option value="">Seçiniz</option>';
+                data.forEach(item => {
+                    const option = document.createElement('option');
+                    option.value = item.id;
+                    option.textContent = item.name;
+                    selectElement.appendChild(option);
+                });
+            } catch (error) {
+                console.error(`${selectId} yüklenirken hata:`, error);
+                alert(`${selectId} yüklenirken bir hata oluştu.`);
+            }
+        }
+
+        async function initializeDropdowns() {
+            await loadOptions('/api/ulkeler', 'ulkeNo');
+            await loadOptions('/api/sehirler', 'sehirNo');
+            await loadOptions('/api/ilceler', 'ilceNo');
+            await loadOptions('/api/mahalleler', 'mahalleNo');
+            await loadOptions('/api/sokaklar', 'sokakNo');
+        }
+
+        // Mülk tipi seçildiğinde ek form alanlarını dinamik olarak oluştur
+        document.getElementById('mulkTipi').addEventListener('change', function () {
+            const mulkTipi = this.value;
+            let formHtml = '';
+
+            if (mulkTipi === "1") {
+                formHtml = `
+                    <h3>Konut Bilgileri</h3>
+                    <label for="apartmanNo">Apartman No:</label>
+                    <input type="number" id="apartmanNo" name="apartmanNo" required>
+
+                    <label for="daireNo">Daire No:</label>
+                    <input type="number" id="daireNo" name="daireNo" required>
+
+                    <label for="tipNo">Ev Tipi:</label>
+                    <select id="tipNo" name="tipNo" required>
+                        <option value="">Ev Tipi Seçiniz</option>
+                    </select>
+
+                    <label for="binaYasi">Bina Yaşı:</label>
+                    <input type="number" id="binaYasi" name="binaYasi" required>
+
+                    <label for="isitmaNo">Isıtma Türü:</label>
+                    <select id="isitmaNo" name="isitmaNo" required>
+                        <option value="">Isıtma Türü Seçiniz</option>
+                    </select>
+
+                    <label for="katSayisi">Kat Sayısı:</label>
+                    <input type="number" id="katSayisi" name="katSayisi" required>
+
+                    <label for="banyoSayisi">Banyo Sayısı:</label>
+                    <input type="number" id="banyoSayisi" name="banyoSayisi" required>
+
+                    <label for="mobilyali">Mobilyalı:</label>
+                    <select id="mobilyali" name="mobilyali" required>
+                        <option value="Evet">Evet</option>
+                        <option value="Hayır">Hayır</option>
+                    </select>
+
+                    <label for="asansorlu">Asansörlü:</label>
+                    <select id="asansorlu" name="asansorlu" required>
+                        <option value="Evet">Evet</option>
+                        <option value="Hayır">Hayır</option>
+                    </select>
+
+                    <label for="otopark">Otopark:</label>
+                    <select id="otopark" name="otopark" required>
+                        <option value="Evet">Evet</option>
+                        <option value="Hayır">Hayır</option>
+                    </select>
+
+                    <label for="balkon">Balkon:</label>
+                    <select id="balkon" name="balkon" required>
+                        <option value="Evet">Evet</option>
+                        <option value="Hayır">Hayır</option>
+                    </select>
+
+                    <label for="site">Site:</label>
+                    <select id="site" name="site" required>
+                        <option value="Evet">Evet</option>
+                        <option value="Hayır">Hayır</option>
+                    </select>
+
+                    <label for="siteAdi">Site Adı:</label>
+                    <input type="text" id="siteAdi" name="siteAdi">
+                `;
+                loadOptions('/api/ev-tipleri', 'tipNo');
+                loadOptions('/api/isitma-turleri', 'isitmaNo');
+            } else if (mulkTipi === "2") {
+                formHtml = `
+                    <h3>İş Yeri Bilgileri</h3>
+                    <label for="binaNo">Bina No:</label>
+                    <input type="number" id="binaNo" name="binaNo" required>
+
+                    <label for="daireNo">Daire No:</label>
+                    <input type="number" id="daireNo" name="daireNo" required>
+
+                    <label for="binaYasi">Bina Yaşı:</label>
+                    <input type="number" id="binaYasi" name="binaYasi" required>
+
+                    <label for="isitmaNo">Isıtma Türü:</label>
+                    <select id="isitmaNo" name="isitmaNo" required>
+                        <option value="">Isıtma Türü Seçiniz</option>
+                    </select>
+
+                    <label for="katSayisi">Kat Sayısı:</label>
+                    <input type="number" id="katSayisi" name="katSayisi" required>
+
+                    <label for="asansorlu">Asansörlü:</label>
+                    <select id="asansorlu" name="asansorlu" required>
+                        <option value="Evet">Evet</option>
+                        <option value="Hayır">Hayır</option>
+                    </select>
+
+                    <label for="otopark">Otopark:</label>
+                    <select id="otopark" name="otopark" required>
+                        <option value="Evet">Evet</option>
+                        <option value="Hayır">Hayır</option>
+                    </select>
+
+                    <label for="depo">Depo:</label>
+                    <select id="depo" name="depo" required>
+                        <option value="Evet">Evet</option>
+                        <option value="Hayır">Hayır</option>
+                    </select>
+                `;
+                loadOptions('/api/isitma-turleri', 'isitmaNo');
+            } else if (mulkTipi === "3") {
+                formHtml = `
+                    <h3>Arsa Bilgileri</h3>
+                    <label for="parselNo">Parsel No:</label>
+                    <input type="text" id="parselNo" name="parselNo" required>
+                `;
+            }
+
+            ekBilgilerDiv.innerHTML = formHtml;
+        });
+
+        // Form gönderimi
+        document.getElementById('mulkForm').addEventListener('submit', async function (e) {
+            e.preventDefault();
+
+            const formData = new FormData(this);
+            const jsonData = Object.fromEntries(formData.entries());
+
+            // Boolean alanları "Evet" => true, "Hayır" => false olarak dönüştür
+            const booleanFields = ['mobilyali', 'asansorlu', 'otopark', 'balkon', 'site', 'depo'];
+            booleanFields.forEach(field => {
+                if (jsonData[field] === 'Evet') jsonData[field] = true;
+                else if (jsonData[field] === 'Hayır') jsonData[field] = false;
+            });
+
+            try {
+                const response = await fetch('/api/mulk-ekle', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(jsonData)
+                });
+
+                const result = await response.json();
+                document.getElementById('sonuc').textContent = result.mesaj;
+            } catch (error) {
+                alert('Mülk eklenirken bir hata oluştu.');
+            }
+        });
+
+
+        // Sayfa yüklendiğinde dropdown'ları başlat
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeDropdowns();
+        });
+    </script>
+</body>
+
+</html>

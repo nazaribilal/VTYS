@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Detay Sayfası</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+
+<body>
+    <div class="container">
+        <!-- Sol menü -->
+        <aside class="sidebar">
+            <h2>Menü</h2>
+            <ul>
+                <li><a href="/index.html">Ana Sayfa</a></li>
+                <li><a href="/mulkler.html" class="active">Mülkleri Göster</a></li>
+                <li><a href="/kiracilar.html">Kiracıları Göster</a></li>
+                <li><a href="/kiraciekle.html">Kiracı Ekle</a></li>
+                <li><a href="/mulkekle.html">Mülk Ekle</a></li>
+                <li><a href="/kiraekle.html">Kira Ekle</a></li>
+            </ul>
+        </aside>
+
+        <!-- Sağ ana içerik alanı -->
+        <main class="content">
+            <h1>Detay Sayfası</h1>
+            <div id="icerik">Yükleniyor...</div>
+        </main>
+    </div>
+
+    <script>
+        // URL'den parametreleri oku
+        const params = new URLSearchParams(window.location.search);
+        const mulkTipiNo = params.get('mulkTipiNo');
+        const mulkNo = params.get('mulkNo');
+
+        // API'ye istek at
+        fetch(`/api/mulkdetay?mulkTipiNo=${mulkTipiNo}&mulkNo=${mulkNo}`)
+            .then(res => res.json())
+            .then(data => {
+                const icerik = document.getElementById('icerik');
+
+                if (data.length === 0) {
+                    icerik.innerHTML = '<p>Veri bulunamadı.</p>';
+                    return;
+                }
+
+                const row = data[0]; // İlk satırı kullan (detay sorgusu genelde tek bir kayıt döner)
+
+                // Boolean değerlerini "Evet" veya "Hayır" olarak dönüştür
+                const formatBoolean = (value) => (value === true ? 'Evet' : 'Hayır');
+
+                if (mulkTipiNo == 1) {
+                    // Konutlar için
+                    icerik.innerHTML = `
+                <h2>Konut Bilgileri</h2>
+                <table>
+                    <tr><th>Mülk Adı</th><td>${row.mulkAdi}</td></tr>
+                    <tr><th>Metre Kare</th><td>${row.metreKare}</td></tr>
+                    <tr><th>Mülk Tipi</th><td>${row.mulkTipiAdi}</td></tr>
+                    <tr><th>Adres</th><td>${row.tam_adres}</td></tr>
+                    <tr><th>Oda Sayısı</th><td>${row.odaSayisi}</td></tr>
+                    <tr><th>Bina Yaşı</th><td>${row.binaYasi}</td></tr>
+                    <tr><th>Isıtma Türü</th><td>${row.isitmaAdi}</td></tr>
+                    <tr><th>Kat Sayısı</th><td>${row.katSayisi}</td></tr>
+                    <tr><th>Banyo Sayısı</th><td>${row.banyoSayisi}</td></tr>
+                    <tr><th>Mobilyalı</th><td>${formatBoolean(row.mobilyali)}</td></tr>
+                    <tr><th>Asansörlü</th><td>${formatBoolean(row.asansorlu)}</td></tr>
+                    <tr><th>Otopark</th><td>${formatBoolean(row.otopark)}</td></tr>
+                    <tr><th>Balkon</th><td>${formatBoolean(row.balkon)}</td></tr>
+                    <tr><th>Site</th><td>${formatBoolean(row.site)}</td></tr>
+                    <tr><th>Site Adı</th><td>${row.siteAdi}</td></tr>
+                </table>
+            `;
+                } else if (mulkTipiNo == 2) {
+                    // İşyerleri için
+                    icerik.innerHTML = `
+                <h2>İşyeri Bilgileri</h2>
+                <table>
+                    <tr><th>Mülk Adı</th><td>${row.mulkAdi}</td></tr>
+                    <tr><th>Metre Kare</th><td>${row.metreKare}</td></tr>
+                    <tr><th>Mülk Tipi</th><td>${row.mulkTipiAdi}</td></tr>
+                    <tr><th>Adres</th><td>${row.tam_adres}</td></tr>
+                    <tr><th>Bina Yaşı</th><td>${row.binaYasi}</td></tr>
+                    <tr><th>Isıtma Türü</th><td>${row.isitmaAdi}</td></tr>
+                    <tr><th>Kat Sayısı</th><td>${row.katSayisi}</td></tr>
+                    <tr><th>Asansörlü</th><td>${formatBoolean(row.asansorlu)}</td></tr>
+                    <tr><th>Otopark</th><td>${formatBoolean(row.otopark)}</td></tr>
+                    <tr><th>Depo</th><td>${formatBoolean(row.depo)}</td></tr>
+                </table>
+            `;
+                } else if (mulkTipiNo == 3) {
+                    // Arsalar için
+                    icerik.innerHTML = `
+                <h2>Arsa Bilgileri</h2>
+                <table>
+                    <tr><th>Mülk Adı</th><td>${row.mulkAdi}</td></tr>
+                    <tr><th>Metre Kare</th><td>${row.metreKare}</td></tr>
+                    <tr><th>Mülk Tipi</th><td>${row.mulkTipiAdi}</td></tr>
+                    <tr><th>Adres</th><td>${row.tam_adres}</td></tr>
+                    <tr><th>Parsel No</th><td>${row.parselNo}</td></tr>
+                </table>
+            `;
+                } else {
+                    icerik.innerHTML = '<p>Geçersiz mülk tipi.</p>';
+                }
+            })
+            .catch(err => {
+                console.error('Hata:', err);
+                document.getElementById('icerik').innerText = 'Veri alınırken hata oluştu.';
+            });
+
+    </script>
+</body>
+
+</html>

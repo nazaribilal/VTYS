@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Kiracı Düzenle</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+
+<body>
+    <div class="container">
+        <h1>Kiracı Düzenle</h1>
+        <form id="edit-form">
+            <label for="isim">İsim:</label>
+            <input type="text" id="isim" name="isim" required>
+
+            <label for="soyisim">Soyisim:</label>
+            <input type="text" id="soyisim" name="soyisim" required>
+
+            <label for="telefonNo">Telefon No:</label>
+            <input type="text" id="telefonNo" name="telefonNo" required>
+
+            <label for="dogumTarihi">Doğum Tarihi:</label>
+            <input type="date" id="dogumTarihi" name="dogumTarihi" required>
+
+            <label for="meslekNo">Meslek:</label>
+            <select id="meslekNo" name="meslekNo" required>
+                <option value="">Meslek Seçiniz</option>
+            </select>
+
+            <label for="medeniHaliNo">Medeni Hali:</label>
+            <select id="medeniHaliNo" name="medeniHaliNo" required>
+                <option value="">Medeni Hali Seçiniz</option>
+            </select>
+
+            <button type="submit">Kaydet</button>
+        </form>
+    </div>
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const id = urlParams.get('id');
+
+        if (!id) {
+            window.location.href = '/kiracilar.html';
+        }
+
+        async function loadMeslekler() {
+            try {
+                const res = await fetch('/api/meslekler');
+                if (!res.ok) throw new Error();
+                const data = await res.json();
+                const meslekSelect = document.getElementById('meslekNo');
+                data.forEach(item => {
+                    const option = document.createElement('option');
+                    option.value = item.meslekNo;
+                    option.textContent = item.meslekAdi;
+                    meslekSelect.appendChild(option);
+                });
+            } catch {
+                alert('Meslekler yüklenirken bir hata oluştu.');
+            }
+        }
+
+        async function loadMedeniHaller() {
+            try {
+                const res = await fetch('/api/medeni-haller');
+                if (!res.ok) throw new Error();
+                const data = await res.json();
+                const medeniHaliSelect = document.getElementById('medeniHaliNo');
+                data.forEach(item => {
+                    const option = document.createElement('option');
+                    option.value = item.medeniHaliNo;
+                    option.textContent = item.medeniHali;
+                    medeniHaliSelect.appendChild(option);
+                });
+            } catch {
+                alert('Medeni haller yüklenirken bir hata oluştu.');
+            }
+        }
+
+        document.getElementById('edit-form').addEventListener('submit', async (event) => {
+            event.preventDefault(); // Formun varsayılan yenileme davranışını engeller
+            const formData = {
+                isim: document.getElementById('isim').value, // Formdaki isim alanının değerini alır
+                soyisim: document.getElementById('soyisim').value, // Soyisim değerini alır
+                telefonNo: document.getElementById('telefonNo').value, // Telefon no değerini alır
+                dogumTarihi: document.getElementById('dogumTarihi').value, // Doğum tarihini alır
+                meslekNo: document.getElementById('meslekNo').value, // Meslek dropdown değerini alır
+                medeniHaliNo: document.getElementById('medeniHaliNo').value, // Medeni hal dropdown değerini alır
+            };
+            try {
+                // Backend'e PUT isteği yapar
+                const res = await fetch(`/api/kiracilar/${id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' }, // JSON olarak gönderileceğini belirtir
+                    body: JSON.stringify(formData), // Form verilerini JSON formatına çevirip gönderir
+                });
+
+                if (!res.ok) { // Eğer yanıt başarılı değilse hata fırlatır
+                    const errorData = await res.json();
+                    throw new Error(errorData.mesaj || 'Bilinmeyen hata oluştu.');
+                }
+
+                alert('Kiracı bilgileri başarıyla güncellendi.'); // Başarılı mesaj
+                window.location.href = '/kiracilar.html'; // Başka bir sayfaya yönlendirme
+            } catch (error) {
+                alert(`Hata: ${error.message}`); // Hata mesajını gösterir
+            }
+        });
+
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadMeslekler();
+            loadMedeniHaller();
+        });
+    </script>
+</body>
+
+</html>

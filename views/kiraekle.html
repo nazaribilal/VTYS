@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Kira Ekle</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+
+<body>
+    <div class="container">
+        <aside class="sidebar">
+            <h2>Menü</h2>
+            <ul>
+                <li><a href="/index.html">Ana Sayfa</a></li>
+                <li><a href="/mulkler.html" class="active">Mülkleri Göster</a></li>
+                <li><a href="/kiracilar.html">Kiracıları Göster</a></li>
+                <li><a href="/kiraciekle.html">Kiracı Ekle</a></li>
+                <li><a href="/mulkekle.html">Mülk Ekle</a></li>
+                <li><a href="/kiraekle.html">Kira Ekle</a></li>
+            </ul>
+        </aside>
+
+        <main class="content">
+            <h1>Yeni Kira Ekle</h1>
+            <form id="kiraForm">
+                <!-- Kirada olmayan evleri seçtir -->
+                <label for="evNo">Ev Seç:</label>
+                <select id="evNo" name="evNo" required>
+                    <option value="">Ev Seçiniz</option>
+                </select>
+
+                <!-- Kirada olmayan kiracıları seçtir -->
+                <label for="kiraciNo">Kiracı Seç:</label>
+                <select id="kiraciNo" name="kiraciNo" required>
+                    <option value="">Kiracı Seçiniz</option>
+                </select>
+
+                <!-- Kira başlangıç ve bitiş tarihi -->
+                <label for="baslangicTarihi">Başlangıç Tarihi:</label>
+                <input type="date" id="baslangicTarihi" name="baslangicTarihi" required>
+
+                <label for="bitisTarihi">Bitiş Tarihi:</label>
+                <input type="date" id="bitisTarihi" name="bitisTarihi" required>
+
+                <!-- Kira ücreti ve para birimi -->
+                <label for="kiraUcreti">Kira Ücreti:</label>
+                <input type="number" id="kiraUcreti" name="kiraUcreti" required>
+
+                <label for="paraBirimiNo">Para Birimi:</label>
+                <select id="paraBirimiNo" name="paraBirimiNo" required>
+                    <option value="">Para Birimi Seçiniz</option>
+                </select>
+
+
+                <button type="submit">Kira Ekle</button>
+            </form>
+            <p id="sonuc"></p>
+        </main>
+    </div>
+
+    <script>
+        // API'den kiralanabilir ev ve kiracı listelerini çek
+        async function loadOptions(apiEndpoint, selectId) {
+            try {
+                const res = await fetch(apiEndpoint);
+                if (!res.ok) {
+                    throw new Error(`HTTP Error! status: ${res.status}`);
+                }
+                const data = await res.json();
+
+                const selectElement = document.getElementById(selectId);
+                selectElement.innerHTML = '<option value="">Seçiniz</option>';
+                data.forEach(item => {
+                    const option = document.createElement('option');
+                    option.value = item.id; // API'deki ID değeri
+                    option.textContent = item.name; // API'deki isim değeri
+                    selectElement.appendChild(option);
+                });
+            } catch (error) {
+                console.error(`${selectId} yüklenirken hata:`, error);
+                alert(`${selectId} yüklenirken bir hata oluştu.`);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadOptions('/api/kiralanabilir-evler', 'evNo');
+            loadOptions('/api/kiralanabilir-kiracilar', 'kiraciNo');
+            loadOptions('/api/para-birimleri', 'paraBirimiNo'); // Para birimlerini ekledik
+        });
+
+
+        // Form gönderimi
+        document.getElementById('kiraForm').addEventListener('submit', async function (e) {
+            e.preventDefault();
+
+            const formData = new FormData(this);
+            const jsonData = Object.fromEntries(formData.entries());
+
+            console.log("Gönderilen veri:", jsonData); // Konsola gönderilen veriyi yazdır
+
+            try {
+                const response = await fetch('/api/kira-ekle', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(jsonData)
+                });
+
+                const result = await response.json();
+                document.getElementById('sonuc').textContent = result.mesaj;
+            } catch (error) {
+                alert('Kira eklenirken bir hata oluştu.');
+            }
+        });
+
+    </script>
+</body>
+
+</html>

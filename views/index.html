@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Uygulama Arayüzü</title>
+    <link rel="stylesheet" href="/style.css">
+    <style>
+        /* Genel Stil */
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: linear-gradient(to bottom, #d3d3d3, #f2f2f2);
+            color: #333;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        .container {
+            display: flex;
+            flex: 1;
+        }
+
+        /* Menü Bar */
+        .sidebar {
+            width: 200px;
+            background: #e0e0e0;
+            padding: 20px;
+            box-sizing: border-box;
+            border-right: 1px solid #ccc;
+        }
+
+        .sidebar h2 {
+            margin-top: 0;
+            font-size: 18px;
+            color: #444;
+            padding-bottom: 10px;
+            text-align: left;
+            /* Sola dayalı */
+        }
+
+        .sidebar ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .sidebar ul li {
+            margin-bottom: 10px;
+        }
+
+        .sidebar a {
+            text-decoration: none;
+            color: #333;
+            display: block;
+            padding: 10px 8px;
+            border-radius: 4px;
+            background: #d6d6d6;
+            transition: background 0.3s;
+        }
+
+        .sidebar a:hover {
+            background: #c7c7c7;
+        }
+
+        /* Hoşgeldiniz Mesajı */
+        .content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .content h1 {
+            font-size: 3em;
+            color: #444;
+            margin-bottom: 20px;
+        }
+
+        .content p {
+            font-size: 1.2em;
+            line-height: 1.5;
+            max-width: 600px;
+            color: #555;
+        }
+
+        /* Footer */
+        footer {
+            background: #e0e0e0;
+            color: #333;
+            padding: 10px 0;
+            text-align: center;
+            font-weight: bold;
+            font-size: 14px;
+            border-top: 1px solid #ccc;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <!-- Sol menü -->
+        <aside class="sidebar">
+            <h2>Menü</h2>
+            <ul>
+                <li><a href="/index.html">Ana Sayfa</a></li>
+                <li><a href="/mulkler.html" class="active">Mülkleri Göster</a></li>
+                <li><a href="/kiracilar.html">Kiracıları Göster</a></li>
+                <li><a href="/kiraciekle.html">Kiracı Ekle</a></li>
+                <li><a href="/mulkekle.html">Mülk Ekle</a></li>
+                <li><a href="/kiraekle.html">Kira Ekle</a></li>
+            </ul>
+        </aside>
+
+        <!-- Ana İçerik Alanı -->
+        <main class="content">
+            <h1>Hoşgeldiniz</h1>
+            <p>Bu uygulama, mülk ve kiracı yönetimini kolaylaştırmak için tasarlanmıştır. Mülkleri ve kiracıları
+                görüntüleyebilir, ekleyebilir ve düzenleyebilirsiniz.</p>
+        </main>
+    </div>
+</body>
+
+</html>

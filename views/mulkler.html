@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mülkler</title>
+    <link rel="stylesheet" href="/style.css">
+    <style>
+        .toplam-sayilar-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .toplam-sayilar {
+            display: flex;
+            gap: 20px;
+        }
+
+        .search-bar {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .search-bar input {
+            padding: 5px;
+            font-size: 14px;
+        }
+
+        .search-bar button {
+            padding: 5px 10px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <!-- Sol Menü -->
+        <aside class="sidebar">
+            <h2>Menü</h2>
+            <ul>
+                <li><a href="/index.html">Ana Sayfa</a></li>
+                <li><a href="/mulkler.html" class="active">Mülkleri Göster</a></li>
+                <li><a href="/kiracilar.html">Kiracıları Göster</a></li>
+                <li><a href="/kiraciekle.html">Kiracı Ekle</a></li>
+                <li><a href="/mulkekle.html">Mülk Ekle</a></li>
+                <li><a href="/kiraekle.html">Kira Ekle</a></li>
+            </ul>
+        </aside>
+
+        <!-- Ana İçerik Alanı -->
+        <main class="content" id="content">
+            <h1>Mülkler</h1>
+
+            <!-- Toplam Sayılar ve Arama Çubuğu -->
+            <div class="toplam-sayilar-container">
+                <div class="toplam-sayilar">
+                    <span>Toplam Konut: <strong id="toplamKonut">0</strong></span>
+                    <span>Toplam İş Yeri: <strong id="toplamIsyeri">0</strong></span>
+                    <span>Toplam Arsa: <strong id="toplamArsa">0</strong></span>
+                </div>
+                <div class="search-bar">
+                    <input type="text" id="search-input" placeholder="Mülk adına göre ara..." />
+                    <button id="search-btn">Ara</button>
+                </div>
+            </div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Mülk Adı</th>
+                        <th>Mülk Tipi</th>
+                        <th>Ad Soyad</th>
+                        <th>Şehir</th>
+                        <th>Ücret</th>
+                        <th>Kalan Ay</th>
+                        <th>Kalan Kira Tutarı</th>
+                        <th>İşlem</th>
+                    </tr>
+                </thead>
+                <tbody id="mulkler-table-body">
+                    <!-- Dinamik olarak doldurulacak -->
+                </tbody>
+            </table>
+        </main>
+    </div>
+
+    <script>
+        // Mülkleri backend'den yükleyip tabloya doldurmak
+        fetch('/api/mulkler')
+            .then(res => res.json())
+            .then(data => {
+                const tableBody = document.getElementById('mulkler-table-body');
+                tableBody.innerHTML = ''; // Önce tabloyu temizle
+
+                data.forEach(m => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${m.mulkAdi || '-'}</td>
+                        <td>${m["Mülk_Tipi"] || '-'}</td>
+                        <td>${m.AdSoyad || '-'}</td>
+                        <td>${m.Sehir || '-'}</td>
+                        <td>${m.ucret || '-'}</td>
+                        <td>${m["Kalan_Ay"] || '0'}</td>
+                        <td>${m["Kalan_Kira_Tutari"] || '-'}</td>
+                        <td>
+                            <a href="/detail.html?mulkTipiNo=${m.mulkTipiNo}&mulkNo=${m.mulkNo}">
+                                <button class="action-btn">Detay</button>
+                            </a>
+                            <a href="/kiragüncelle.html?kiraNo=${m.kiraNo || ''}">
+                                <button class="action-btn">Kira Güncelle</button>
+                            </a>
+                        </td>
+                    `;
+                    tableBody.appendChild(row);
+                });
+            })
+            .catch(err => {
+                console.error('Veri yükleme hatası:', err);
+                document.getElementById('content').innerHTML = '<p>Veriler yüklenirken hata oluştu.</p>';
+            });
+
+        // Arama işlemini gerçekleştiren fonksiyon
+        document.getElementById('search-btn').addEventListener('click', () => {
+            const query = document.getElementById('search-input').value.toLowerCase();
+
+            fetch(`/api/mulkler/arama?query=${encodeURIComponent(query)}`)
+                .then(res => {
+                    if (!res.ok) {
+                        throw new Error('Arama sırasında bir hata oluştu.');
+                    }
+                    return res.json();
+                })
+                .then(data => {
+                    const tableBody = document.getElementById('mulkler-table-body');
+                    tableBody.innerHTML = ''; // Tabloyu temizle
+
+                    data.forEach(m => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${m.mulkAdi || '-'}</td>
+                            <td>${m["Mülk_Tipi"] || '-'}</td>
+                            <td>${m.AdSoyad || '-'}</td>
+                            <td>${m.Sehir || '-'}</td>
+                            <td>${m.ucret || '-'}</td>
+                            <td>${m["Kalan_Ay"] || '0'}</td>
+                            <td>${m["Kalan_Kira_Tutari"] || '-'}</td>
+                            <td>
+                                <a href="/detail.html?mulkTipiNo=${m.mulkTipiNo}&mulkNo=${m.mulkNo}">
+                                    <button class="action-btn">Detay</button>
+                                </a>
+                                <a href="/kiragüncelle.html?kiraNo=${m.kiraNo || ''}">
+                                    <button class="action-btn">Kira Güncelle</button>
+                                </a>
+                            </td>
+                        `;
+                        tableBody.appendChild(row);
+                    });
+                })
+                .catch(err => {
+                    console.error('Arama sırasında hata oluştu:', err);
+                    document.getElementById('content').innerHTML = '<p>Arama sırasında bir hata oluştu.</p>';
+                });
+        });
+
+        // Toplam sayıları backend'den yükleyip ekrana yazdırmak
+        async function loadToplamSayilar() {
+            try {
+                const res = await fetch('/api/mulk-toplam');
+                const data = await res.json();
+
+                document.getElementById('toplamKonut').textContent = data.toplam_konut || 0;
+                document.getElementById('toplamIsyeri').textContent = data.toplam_isyeri || 0;
+                document.getElementById('toplamArsa').textContent = data.toplam_arsa || 0;
+            } catch (error) {
+                console.error('Toplam sayılar yüklenirken hata:', error);
+            }
+        }
+
+        // Sayfa yüklendiğinde toplam sayıları yükle
+        document.addEventListener('DOMContentLoaded', () => {
+            loadToplamSayilar();
+        });
+    </script>
+</body>
+
+</html>

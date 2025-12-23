@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Kiracı Ekle</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+
+<body>
+    <div class="container">
+        <aside class="sidebar">
+            <h2>Menü</h2>
+            <ul>
+                <li><a href="/index.html">Ana Sayfa</a></li>
+                <li><a href="/mulkler.html" class="active">Mülkleri Göster</a></li>
+                <li><a href="/kiracilar.html">Kiracıları Göster</a></li>
+                <li><a href="/kiraciekle.html">Kiracı Ekle</a></li>
+                <li><a href="/mulkekle.html">Mülk Ekle</a></li>
+                <li><a href="/kiraekle.html">Kira Ekle</a></li>
+            </ul>
+        </aside>
+
+        <main class="content">
+            <h1>Yeni Kiracı Ekle</h1>
+            <form id="kiraciForm">
+                <label for="tcKimlikNo">TC Kimlik No:</label>
+                <input type="text" id="tcKimlikNo" name="tcKimlikNo" required maxlength="11">
+
+                <label for="isim">İsim:</label>
+                <input type="text" id="isim" name="isim" required>
+
+                <label for="soyisim">Soyisim:</label>
+                <input type="text" id="soyisim" name="soyisim" required>
+
+                <label for="telefonNo">Telefon No:</label>
+                <input type="text" id="telefonNo" name="telefonNo" required maxlength="10">
+
+                <label for="dogumTarihi">Doğum Tarihi:</label>
+                <input type="date" id="dogumTarihi" name="dogumTarihi" required>
+
+                <label for="meslekNo">Meslek:</label>
+                <select id="meslekNo" name="meslekNo" required>
+                    <option value="">Meslek Seçiniz</option>
+                </select>
+
+                <label for="medeniHaliNo">Medeni Hali:</label>
+                <select id="medeniHaliNo" name="medeniHaliNo" required>
+                    <option value="">Medeni Hali Seçiniz</option>
+                </select>
+
+                <button type="submit">Kiracı Ekle</button>
+            </form>
+            <p id="sonuc"></p>
+        </main>
+    </div>
+
+    <script>
+        async function loadMeslekler() {
+            try {
+                const res = await fetch('/api/meslekler');
+                if (!res.ok) throw new Error();
+                const data = await res.json();
+                const meslekSelect = document.getElementById('meslekNo');
+                data.forEach(item => {
+                    const option = document.createElement('option');
+                    option.value = item.meslekNo;
+                    option.textContent = item.meslekAdi;
+                    meslekSelect.appendChild(option);
+                });
+            } catch {
+                alert('Meslekler yüklenirken bir hata oluştu.');
+            }
+        }
+
+        async function loadMedeniHaller() {
+            try {
+                const res = await fetch('/api/medeni-haller');
+                if (!res.ok) throw new Error();
+                const data = await res.json();
+                const medeniHaliSelect = document.getElementById('medeniHaliNo');
+                data.forEach(item => {
+                    const option = document.createElement('option');
+                    option.value = item.medeniHaliNo;
+                    option.textContent = item.medeniHali;
+                    medeniHaliSelect.appendChild(option);
+                });
+            } catch {
+                alert('Medeni haller yüklenirken bir hata oluştu.');
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadMeslekler();
+            loadMedeniHaller();
+        });
+
+        document.getElementById('kiraciForm').addEventListener('submit', async function (e) {
+            e.preventDefault();
+
+            const formData = {
+                tcKimlikNo: document.getElementById('tcKimlikNo').value,
+                isim: document.getElementById('isim').value,
+                soyisim: document.getElementById('soyisim').value,
+                telefonNo: document.getElementById('telefonNo').value,
+                dogumTarihi: document.getElementById('dogumTarihi').value,
+                meslekNo: document.getElementById('meslekNo').value,
+                medeniHaliNo: document.getElementById('medeniHaliNo').value
+            };
+
+            try {
+                const response = await fetch('/api/kiraci-ekle', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(formData)
+                });
+
+                const sonuc = await response.json();
+                document.getElementById('sonuc').textContent = sonuc.mesaj;
+            } catch {
+                alert('Kiracı eklenirken bir hata oluştu.');
+            }
+        });
+    </script>
+</body>
+
+</html>

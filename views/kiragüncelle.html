@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Kira Güncelle</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+
+<body>
+    <div class="container">
+        <aside class="sidebar">
+            <h2>Menü</h2>
+            <ul>
+                <li><a href="/index.html">Ana Sayfa</a></li>
+                <li><a href="/mulkler.html" class="active">Mülkleri Göster</a></li>
+                <li><a href="/kiracilar.html">Kiracıları Göster</a></li>
+                <li><a href="/kiraciekle.html">Kiracı Ekle</a></li>
+                <li><a href="/mulkekle.html">Mülk Ekle</a></li>
+                <li><a href="/kiraekle.html">Kira Ekle</a></li>
+            </ul>
+        </aside>
+
+        <main class="content">
+            <h1>Kira Güncelle</h1>
+            <form id="kiraGuncelleForm">
+                <label for="baslangicTarihi">Başlangıç Tarihi:</label>
+                <input type="date" id="baslangicTarihi" name="baslangicTarihi" required>
+
+                <label for="bitisTarihi">Bitiş Tarihi:</label>
+                <input type="date" id="bitisTarihi" name="bitisTarihi" required>
+
+                <label for="kiraUcreti">Kira Ücreti:</label>
+                <input type="number" id="kiraUcreti" name="kiraUcreti" required>
+
+                <label for="paraBirimiNo">Para Birimi:</label>
+                <select id="paraBirimiNo" name="paraBirimiNo" required>
+                    <option value="">Para Birimi Seçiniz</option>
+                </select>
+
+                <button type="submit">Güncelle</button>
+            </form>
+            <p id="sonuc"></p>
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                // Para birimlerini yükle
+                await loadOptions('/api/para-birimleri', 'paraBirimiNo');
+            } catch (error) {
+                console.error('Para birimleri yüklenirken hata:', error);
+            }
+        });
+
+        async function loadOptions(apiEndpoint, selectId) {
+            try {
+                const res = await fetch(apiEndpoint);
+                const data = await res.json();
+
+                const selectElement = document.getElementById(selectId);
+                selectElement.innerHTML = '<option value="">Seçiniz</option>';
+                data.forEach(item => {
+                    const option = document.createElement('option');
+                    option.value = item.id;
+                    option.textContent = item.name;
+                    selectElement.appendChild(option);
+                });
+            } catch (error) {
+                console.error(`${selectId} yüklenirken hata:`, error);
+                alert(`${selectId} yüklenirken bir hata oluştu.`);
+            }
+        }
+
+        document.getElementById('kiraGuncelleForm').addEventListener('submit', async function (e) {
+            e.preventDefault();
+
+            const params = new URLSearchParams(window.location.search);
+            const kiraNo = params.get('kiraNo');
+
+            const formData = new FormData(this);
+            const jsonData = Object.fromEntries(formData.entries());
+
+            try {
+                const response = await fetch(`/api/kira-guncelle/${kiraNo}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(jsonData)
+                });
+
+                const result = await response.json();
+                document.getElementById('sonuc').textContent = result.mesaj;
+            } catch (error) {
+                alert('Kira güncellenirken bir hata oluştu.');
+            }
+        });
+    </script>
+
+</body>
+
+</html>

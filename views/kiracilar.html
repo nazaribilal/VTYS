@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Kiracılar</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+
+<body>
+    <div class="container">
+        <!-- Sol Menü -->
+        <aside class="sidebar">
+            <h2>Menü</h2>
+            <ul>
+                <li><a href="/index.html">Ana Sayfa</a></li>
+                <li><a href="/mulkler.html" class="active">Mülkleri Göster</a></li>
+                <li><a href="/kiracilar.html">Kiracıları Göster</a></li>
+                <li><a href="/kiraciekle.html">Kiracı Ekle</a></li>
+                <li><a href="/mulkekle.html">Mülk Ekle</a></li>
+                <li><a href="/kiraekle.html">Kira Ekle</a></li>
+            </ul>
+        </aside>
+
+        <!-- Ana İçerik Alanı -->
+        <main class="content" id="content">
+            <h1>Kiracılar</h1>
+            <p>Veriler yükleniyor...</p>
+        </main>
+    </div>
+
+    <script>
+        // Kiracılar verisini almak için fetch kullan
+        fetch('/api/kiracilar') // /api/kiracilar endpoint'i ile veriyi alacağız
+            .then(res => res.json())
+            .then(data => {
+                const content = document.getElementById('content');
+
+                // Toplam kiracı sayısını hesapla
+                const toplamKiraci = data.length;
+
+                // Kiracılar tablosu
+                let html = `
+                        <h2>Kiracılar Listesi</h2>
+                        <p>Toplam Kiracı Sayısı: <strong>${toplamKiraci}</strong></p>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>TC Kimlik No</th>
+                                    <th>İsim</th>
+                                    <th>Soyisim</th>
+                                    <th>Telefon No</th>
+                                    <th>Doğum Tarihi</th>
+                                    <th>Meslek</th>
+                                    <th>Medeni Hali</th>
+                                    <th>İşlemler</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                    `;
+
+                // Veriyi satır satır tabloya ekle
+                data.forEach(kiraci => {
+                    html += `
+                            <tr>
+                                <td>${kiraci.tcKimlikNo}</td>
+                                <td>${kiraci.isim}</td>
+                                <td>${kiraci.soyisim}</td>
+                                <td>${kiraci.telefonNo}</td>
+                                <td>${kiraci.dogumTarihi}</td>
+                                <td>${kiraci.meslekAdi}</td>
+                                <td>${kiraci.medeniHali}</td>
+                                <td>
+                                    <button class="btn-delete" data-id="${kiraci.tcKimlikNo}">Sil</button>
+                                    <a href="/kiraciduzenle.html?id=${kiraci.tcKimlikNo}">
+                                        <button class="btn-edit">Düzenle</button>
+                                    </a>
+                                </td>
+                            </tr>
+                        `;
+                });
+
+                html += `</tbody></table>`;
+                content.innerHTML = html;
+
+                // Silme butonlarına event listener ekle
+                document.querySelectorAll('.btn-delete').forEach(button => {
+                    button.addEventListener('click', (event) => {
+                        const id = event.target.getAttribute('data-id');
+                        const confirmDelete = confirm('Bu kiracıyı silmek istediğinize emin misiniz?');
+                        if (confirmDelete) {
+                            fetch(`/api/kiracilar/${id}`, { method: 'DELETE' })
+                                .then(res => res.json())
+                                .then(response => {
+                                    alert(response.mesaj || 'Kiracı silindi.');
+                                    location.reload(); // Sayfayı yenile
+                                })
+                                .catch(err => console.error('Silme hatası:', err));
+                        }
+                    });
+                });
+            })
+            .catch(err => {
+                console.error('Veri çekme hatası:', err);
+                document.getElementById('content').innerHTML = '<p>Veriler yüklenirken hata oluştu.</p>';
+            });
+    </script>
+</body>
+
+</html>
